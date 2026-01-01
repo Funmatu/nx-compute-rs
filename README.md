@@ -1,6 +1,6 @@
 # Nexus Compute RS: Dual-Runtime R&D Architecture
 
-![Build Status](https://github.com/USERNAME/nx-compute-rs/actions/workflows/deploy.yml/badge.svg)
+![Build Status](https://github.com/Funmatu/nx-compute-rs/actions/workflows/deploy.yml/badge.svg)
 ![Rust](https://img.shields.io/badge/Language-Rust-orange.svg)
 ![Platform](https://img.shields.io/badge/Platform-WASM%20%7C%20Python-blue.svg)
 
