@@ -32,6 +32,11 @@ jobs:
         # ハイブリッド構成なので、Web用フラグ(--features wasm)を明示的にONにする
         run: wasm-pack build --target web --out-dir www/pkg --no-default-features --features wasm
       
+      # CIサーバー上でのみ .gitignore を削除する。
+      # これにより、ユーザーのローカル環境は汚さずに、生成された pkg フォルダを強制的に認識させる。
+      - name: Remove .gitignore to allow deploying pkg
+        run: rm -f .gitignore
+      
       # Jekyll処理を無効化するファイルを作成
       - name: Create .nojekyll
         run: touch www/.nojekyll
