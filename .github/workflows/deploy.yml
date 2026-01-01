@@ -1,57 +1,69 @@
-name: Build and Deploy
+name: Deploy to GitHub Pages
 
 on:
+  # mainブランチにpushされたら実行
   push:
     branches: ["main"]
+  # ブラウザから手動で実行したい時用
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write # gh-pagesブランチへの書き込み権限
 
 jobs:
-  build-wasm:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      # Rust環境のセットアップ (キャッシュも効く現代的なAction)
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          profile: minimal
-          override: true
+          targets: wasm32-unknown-unknown
 
+      # wasm-packのインストール
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
+      # ビルド実行 (Releaseモードで最適化)
       - name: Build WASM
-        run: wasm-pack build --target web --out-dir www/pkg --no-default-features --features wasm
+        # ハイブリッド構成なので、Web用フラグ(--features wasm)を明示的にONにする
+        run: wasm-pack build --target web --out-dir www/pkg --no-default-features --features wasm --release
 
+      # GitHub Pagesへのデプロイ
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./www
+          publish_dir: ./www # このフォルダの中身を公開する
+          force_orphan: true # 履歴を溜め込まず、常に最新版だけで上書きする（軽量化）
 
-  test-python:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-          
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-      
-      - name: Install Maturin
-        run: pip install maturin
-        
-      - name: Build and Test Python Module
-        run: |
-          maturin develop --features python
-          python -c "import nx-compute-rs; print(f'Test Result: {nx-compute-rs.compute_metrics(1000, 1.0)}')"
+# ======================================================================================
+#  [Reference] Python CI Job
+#  将来的にPythonモジュールの自動テストが必要になった場合、以下のコメントを解除してjobsに追加してください。
+#  (ローカルのUV環境で十分な場合は不要です)
+# ======================================================================================
+#   test-python:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#
+#       - name: Set up Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: '3.10'
+#
+#       # Python側でもRustコンパイラは必要
+#       - name: Install Rust
+#         uses: dtolnay/rust-toolchain@stable
+#
+#       - name: Install Maturin
+#         run: pip install maturin
+#
+#       - name: Build and Test Python Module
+#         # Releaseビルドでテストする場合、--release を追加してください
+#         run: |
+#           maturin develop --features python
+#           python -c "import nx_compute_rs; print(f'Test Result: {nx_compute_rs.compute_metrics(1000, 1.0)}')"
