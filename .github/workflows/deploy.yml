@@ -30,7 +30,7 @@ jobs:
       # ビルド実行 (Releaseモードで最適化)
       - name: Build WASM
         # ハイブリッド構成なので、Web用フラグ(--features wasm)を明示的にONにする
-        run: wasm-pack build --target web --out-dir www/pkg --no-default-features --features wasm --release
+        run: wasm-pack build --target web --out-dir www/pkg --no-default-features --features wasm
 
       # GitHub Pagesへのデプロイ
       - name: Deploy to GitHub Pages
