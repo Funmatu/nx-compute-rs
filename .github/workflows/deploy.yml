@@ -31,6 +31,10 @@ jobs:
       - name: Build WASM
         # ハイブリッド構成なので、Web用フラグ(--features wasm)を明示的にONにする
         run: wasm-pack build --target web --out-dir www/pkg --no-default-features --features wasm
+      
+      # Jekyll処理を無効化するファイルを作成
+      - name: Create .nojekyll
+        run: touch www/.nojekyll
 
       # GitHub Pagesへのデプロイ
       - name: Deploy to GitHub Pages
